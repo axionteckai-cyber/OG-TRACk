@@ -4,17 +4,19 @@ const { Server } = require('socket.io');
 const multer     = require('multer');
 const fs         = require('fs');
 const crypto     = require('crypto');
-const { initializeApp, cert } = require('firebase-admin/app');
+const { initializeApp, cert, getApps } = require('firebase-admin/app');
 const { getFirestore } = require('firebase-admin/firestore');
 const path       = require('path');
 
-let serviceAccount;
-if (process.env.FIREBASE_KEY) {
-  serviceAccount = JSON.parse(process.env.FIREBASE_KEY);
-} else {
-  serviceAccount = require('./serviceAccountKey.json');
+if (!getApps().length) {
+  let serviceAccount;
+  if (process.env.FIREBASE_KEY) {
+    serviceAccount = JSON.parse(process.env.FIREBASE_KEY);
+  } else {
+    serviceAccount = require('./serviceAccountKey.json');
+  }
+  initializeApp({ credential: cert(serviceAccount) });
 }
-initializeApp({ credential: cert(serviceAccount) });
 const db = getFirestore();
 
 const app    = express();
