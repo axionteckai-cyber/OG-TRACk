@@ -22,7 +22,11 @@ const server = http.createServer(app);
 
 // ── File upload setup ─────────────────────────────────────────────────────────
 const UPLOAD_DIR = path.join(__dirname, 'public', 'uploads');
-if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+try {
+  if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+} catch (e) {
+  console.warn('Could not create upload dir (read-only filesystem?):', e.message);
+}
 const upload = multer({
   dest: UPLOAD_DIR,
   limits: { fileSize: 20 * 1024 * 1024 }, // 20MB
@@ -1684,4 +1688,8 @@ io.on('connection', socket => {
 });
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`BugTrack running on port ${PORT}`));
+if (!process.env.VERCEL) {
+  server.listen(PORT, () => console.log(`BugTrack running on port ${PORT}`));
+}
+
+module.exports = app;
